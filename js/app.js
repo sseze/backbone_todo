@@ -1,18 +1,17 @@
 (function() {
-
 var Task = Backbone.Model.extend({
     defaults: {
-        title: 'do something!',
+        title: 'do something',
         completed: false
     }
 });
-var Tasks = Backbone.Collection.extend({model: Task});
+var Tasks = Backbone.Collection.extend({ model: Task });
 
 var TaskView = Backbone.View.extend({
     tagName: 'li',
     initialize: function(){
         this.model.on('destroy', this.remove, this);
-        this.model.on('change', this.render(), this);
+        this.model.on('change', this.render, this);
     },
     events: {
         'click .delete' : 'destroy',
@@ -22,7 +21,7 @@ var TaskView = Backbone.View.extend({
         this.model.set('completed', !this.model.get('completed'));
     },
     destroy: function(){
-        if (confirm('are you sure?')){
+        if (confirm('are you sure?')) {
             this.model.destroy();
         }
     },
@@ -44,8 +43,7 @@ var TasksView = Backbone.View.extend({
             this.$el.append(taskView.render().el);
         }, this);
         return this;
-    },
-
+    }
 });
 
 var tasks = new Tasks([
@@ -54,14 +52,13 @@ var tasks = new Tasks([
         completed: true
     },
     {
-        title: 'task2',
+        title: 'task2'
     },
     {
-        title: 'task3',
-    },
+        title: 'task3'
+    }
 ]);
 
 var tasksView = new TasksView({collection: tasks});
 $('#tasks').html(tasksView.render().el);
-
 })();
