@@ -3,6 +3,16 @@ var Task = Backbone.Model.extend({
     defaults: {
         title: 'do something',
         completed: false
+    },
+    validate: function(attrs){
+        if ( _.isEmpty(attrs.title) ) {
+            return 'title must not be empty';
+        }
+    },
+    initialize: function(){
+        this.on('invalid', function(model, error) {
+            $('#error').html(error);
+        });
     }
 });
 var Tasks = Backbone.Collection.extend({ model: Task });
@@ -39,16 +49,27 @@ var TasksView = Backbone.View.extend({
     tagName: 'ul',
     initialize: function(){
         this.collection.on('add', this.addNew, this);
+        this.collection.on('change', this.updateCount, this);
+        this.collection.on('destroy', this.updateCount, this);
     },
     addNew: function(task){
         var taskView = new TaskView({model: task});
         this.$el.append(taskView.render().el);
+        $('#title').val('').focus();
+        this.updateCount();
+    },
+    updateCount: function(){
+        var uncompletedTasks = this.collection.filter(function(task){
+            return !task.get('completed');
+        });
+        $('#count').html(uncompletedTasks.length);
     },
     render: function(){
         this.collection.each(function(task){
             var taskView = new TaskView({model: task});
             this.$el.append(taskView.render().el);
         }, this);
+        this.updateCount();
         return this;
     }
 });
@@ -60,8 +81,13 @@ var AddTaskView = Backbone.View.extend({
     },
     submit: function(e){
         e.preventDefault();
-        var task = new Task({title: $('#title').val()});
-        this.collection.add(task);
+        // var task = new Task({title: $('#title').val()});
+        // this.collection.add(task);
+        var task = new Task();
+        if (task.set({title: $('#title').val()}, {validate: true})) {
+            this.collection.add(task);
+            $('#error').empty();
+        }
     }
 });
 
